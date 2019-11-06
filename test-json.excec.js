@@ -120,6 +120,13 @@ module.exports = {
             t.done();
         },
 
+        'should encode unexpectely null objects as null': function(t) {
+            var je = json_comp({ a: { b: 1 } });
+            var str = je.exec({ a: null });
+            t.equal(str, '{"a":null}');
+            t.done();
+        },
+
         'should json encode strings on node-v10': function(t) {
             var ver = process.version;
             Object.defineProperty(process, 'version', { value: 'v10.15.0' });
