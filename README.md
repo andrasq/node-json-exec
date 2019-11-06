@@ -47,7 +47,7 @@ not skipped, they're stringified as `null`.
 Changelog
 ----------------
 
-- 0.1.0 - initial version
+- 0.1.0 - initial version with `json_comp` and `json_exec`
 
 
 Todo
