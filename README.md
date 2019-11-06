@@ -53,8 +53,8 @@ Changelog
 Todo
 ----------------
 
-- allow a different default for missing properties other than `null`
 - allow for constant properties that will not be re-stringified each time
+- build a template-specific stringifier function instead of walking the template
 
 
 Related Work
