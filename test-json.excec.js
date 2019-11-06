@@ -108,4 +108,23 @@ module.exports = {
 
         t.done();
     },
+
+    'edge cases': {
+        'should json encode strings on node-v10': function(t) {
+            var ver = process.version;
+            Object.defineProperty(process, 'version', { value: 'v10.15.0' });
+            t.unrequire('./');
+            var json_comp = require('./').json_comp;
+            var je = json_comp({ a: "string" });
+            // for short strings
+            t.equal(je.exec({ a: "Hi!" }), '{"a":"Hi!"}');
+            // for converted ascii strings
+            t.equal(je.exec({ a: "Hello,\n world." }), '{"a":"Hello,\\n world."}');
+            // for very long strings
+            t.equal(je.exec({ a: new Array(1000).join('x') }), '{"a":"' + new Array(1000).join('x') + '"}');
+            t.unrequire('./');
+            Object.defineProperty(process, 'version', { value: ver });
+            t.done();
+        },
+    },
 }

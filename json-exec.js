@@ -99,6 +99,7 @@ function json_exec( encoder, obj ) {
 
         // stringify the property value
         // a typeofToString table method lookup is slower, a switch on the type is slower
+        // an external stringify() function is slower (and is only 1% of cpu)
         if (value === null) json += 'null';
         else if (value === undefined) json += defaultString;
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
@@ -130,35 +131,26 @@ JsonExec.prototype.exec = function exec( obj ) {
     return json_exec(this, obj);
 }
 
-// stringify the item like json, except undefined is encoded as null.
-// numbers are returned as-is, since faster to concat numbers to strings than to coerce first
-/**
-function stringify( item ) {
-    if (item == null) return 'null';
-    else switch (typeof item) {
-    case 'number': return (item > -Infinity && item < Infinity) ? item : 'null';
-    case 'string': return jsonEncodeString(item);
-    case 'boolean': return item ? 'true' : 'false';
-    default: return JSON.stringify(item);
-    }
-}
-**/
-
 // from qbson:
 function jsonEncodeString( str ) {
-    return (/[\x00-\x1F\\\"\u007F-\uFFFF]/.test(str)) ? JSON.stringify(str) : '"' + str + '"';
-    // return (str.length > 20 || _needEscaping(str)) ? JSON.stringify(str) : '"' + str + '"';
+    return (_needEscaping(str)) ? JSON.stringify(str) : '"' + str + '"';
 }
-/**
+var nodeMajor = parseInt(process.version.slice(1));
 function _needEscaping( str ) {
-    var len = str.length;
-    for (var i = 0; i < len; i++) {
-        var ch = str.charCodeAt(i);
-        if (ch === 0x22 || ch === 0x5c || ch < 0x20 || ch >= 0x7f) return true;
+    if (nodeMajor <= 9) {
+        // regex is faster with node <= v9, slower with >= v10
+        return str.length > 400 || /[\x00-\x1F\\\"\u007F-\uFFFF]/.test(str);
     }
-    return false;
+    else {
+        var len = str.length;
+        if (len > 100) return true;
+        for (var i = 0; i < len; i++) {
+            var ch = str.charCodeAt(i);
+            if (ch === 0x22 || ch === 0x5c || ch < 0x20 || ch >= 0x7f) return true;
+        }
+        return false;
+    }
 }
-**/
 
 toStruct(JsonExec.prototype);
 function toStruct(hash) { return toStruct.prototype = hash }
