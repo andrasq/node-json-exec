@@ -53,7 +53,7 @@ are omitted.
 Changelog
 ----------------
 
-- 0.1.2 - bug fixes, speedups
+- 0.1.3 - bug fixes, tuning
 - 0.1.0 - initial version with `json_comp` and `json_exec`
 
 

@@ -1,7 +1,7 @@
 {
   "name": "json-exec",
   "description": "fast templated json stringify",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "json-exec",
   "author": "andrasq",
   "license": "Apache-2.0",

@@ -74,8 +74,8 @@ function json_comp( format, options ) {
         if (constants[keys[i]] === undefined) {
             var key = keys[i];
             // missing properties are faster to test than to read (as undefined)
-            if (runners[key]) template.push({ name: key, encoder: runners[key], stringifier: buildStringifier(template[key], runners[key], options.default), stringify });
-            else template.push({ name: key, encoder: null, stringifier: buildStringifier(template[key], null, options.default), stringify });
+            if (runners[key]) template.push({ name: key, encoder: runners[key], stringifier: (buildStringifier(template[key], runners[key], options.default), stringify) });
+            else template.push({ name: key, encoder: null, stringifier: (buildStringifier(template[key], null, options.default), stringify) });
             template.push(strings.shift());
         }
     }
