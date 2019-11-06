@@ -26,8 +26,6 @@ module.exports = {
  * The template will always contain one more string constant than keys.
  *
  * Format is a sample object to use for the layout and any constant values.
- *
- * TODO: configure default value for when property is missing (eg '-')
  */
 function json_comp( format, options ) {
     var options = options || {};
@@ -81,7 +79,7 @@ function json_comp( format, options ) {
         }
     }
 
-    return new JsonRunner({ template: template });
+    return new JsonRunner({ template: template, default: options.default });
 }
 
 function json_exec( encoder, obj ) {
@@ -91,8 +89,10 @@ function json_exec( encoder, obj ) {
 
 function JsonRunner( config ) {
     this.template = config.template;
+    this.defaultValue = config.default || '-';
 }
 JsonRunner.prototype.exec = function exec( obj ) {
+    var defaultValue = this.defaultValue;
     var template = this.template;
     var len = template.length;
 
@@ -108,7 +108,9 @@ JsonRunner.prototype.exec = function exec( obj ) {
         // TODO: store in an object, not array
         if (Array.isArray(name)) { var comp = name[1]; name = name[0]; }
         var value = obj[name];
-        if (typeof value === 'number' && !isNaN(value)) json += value;
+        if (value === null) json += 'null';
+        else if (value === undefined) json += defaultValue;
+        else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
         // recursively exec-d sub-object value
         else if (typeof value === 'object' && value != null && !Array.isArray(value)) json += json_exec(comp, value);
@@ -214,11 +216,12 @@ var logline = {
 var obj = logline;
 //var obj = { a: 'test' };
 
+var nloops = 500000;
 var je = json_comp(obj);
-timeit(100000, function() { x = JSON.stringify(obj) });
+timeit(nloops, function() { x = JSON.stringify(obj) });
 // 258k/s
 // ABC: 1.0m/s
-timeit(100000, function() { x = je.exec(obj) });
+timeit(nloops, function() { x = je.exec(obj) });
 console.log(x);
 // 441k/s
 // ABC: 1.7m/s
@@ -226,14 +229,23 @@ if (fastjsonstringify) {
 var templatize = function(obj) {
     var properties = {};
     for (var k in obj) {
-        if (obj[k] && typeof obj[k] == 'object' && obj[k].constructor === Object) properties[k] = { type: 'object', properties: templatize(obj[k]) }
+        // supported types are 'string', 'integer', 'number', 'array', 'object', 'boolean', 'null'
+        // note: default: 'null' and '-' encode to an empty string (not the strings "null" or "-")
+        // note: so is there no way to emit a {"prop":null} null-valued property?
+        if (obj[k] === null) properties[k] = { type: 'string', default: '-' };
+        // note: type: 'null' hardcodes a null value in the output
+        // if (obj[k] === null) properties[k] = { type: 'null' };
+        // note: anyOf destroys performance to less than half
+        // if (obj[k] === null) properties[k] = { 'anyOf': [{ type: 'null' }, { type: 'string' }, { type: 'number' }, { type: 'boolean' }] };
+        else if (Array.isArray(obj[k])) properties[k] = { type: 'array' };
+        else if (obj[k] && typeof obj[k] == 'object') properties[k] = { type: 'object', properties: templatize(obj[k]) }
         else properties[k] = { type: typeof obj[k] };
     }
     return properties;
 }
     var schema = { type: 'object', properties: templatize(obj) };
     var strfy = fastjsonstringify(schema);
-    timeit(100000, function() { x = strfy(obj) });
+    timeit(nloops, function() { x = strfy(obj) });
 }
 console.log(x);
 
