@@ -5,10 +5,7 @@
  * Licensed under the Apache License, Version 2.0
  *
  * 2019-03-27 - AR.
- * 2019-11-05 - faster stringify()
- *
- * Related work:
- *      https://github.com/fastify/fast-json-stringify
+ * 2019-11-05 - split out of json-simple
  */
 
 'use strict';
