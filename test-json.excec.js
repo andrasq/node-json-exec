@@ -89,7 +89,7 @@ module.exports = {
 
     'should stringify fast 200k': function(t) {
         var testObj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null };
-        var nloops = 100000;
+        var nloops = 200000;
 
         var t1 = Date.now();
         for (var i = 0; i < nloops; i++) var x = JSON.stringify(testObj);
