@@ -10,8 +10,10 @@
     "url": "https://github.com/andrasq/node-json-exec"
   },
   "keywords": [ "json", "fast", "compile", "execute", "templated" ],
+  "files": ["json-exec.js", "README.md", "LICENSE"],
 
   "scripts": {
+    "benchmark": "node benchmark.js",
     "test": "qnit test-*",
     "coverage": "nyc -r text -r lcov npm test",
     "clean": "rm -rf .nyc_output coverage"
