@@ -72,8 +72,8 @@ function json_comp( format, options ) {
     template.push(strings.shift());
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
+            // missing properties are faster to test than to read (as undefined)
             if (runners[keys[i]]) template.push({ name: keys[i], coder: runners[keys[i]] });
-            // TODO: store in an object, not array
             else template.push({ name: keys[i], coder: null });
             template.push(strings.shift());
         }
