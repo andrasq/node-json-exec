@@ -92,12 +92,13 @@ function json_exec( encoder, obj ) {
         // preformatted quoted property name with : separator
         json += template[i];
 
-        // verbatim property name
+        // verbatim property name and corresponding value
         var nestedCoder, name = template[i + 1];
         if (Array.isArray(name)) { nestedCoder = name[1]; name = name[0]; }
         var value = obj[name];
 
         // stringify the property value
+        // a typeofToString table method lookup is slower, a switch on the type is slower
         if (value === null) json += 'null';
         else if (value === undefined) json += defaultString;
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
