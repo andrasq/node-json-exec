@@ -16,6 +16,13 @@ or other use cases where the object schema does not vary.
     json_exec({ name: 'Minnie Mouse' });
     // => '{"name":"Minnie Mouse","age":null}'
 
+For example, to speed up the logging of fixed-pattern objects:
+
+    // auto-initialize the logline json encoder
+    var loglineCoder = loglineCoder || json_comp(logObject);
+    var logline = json_exec(loglineCoder, logObject);
+    logger.log(logline);
+
 
 API
 ----------------
