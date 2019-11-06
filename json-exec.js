@@ -57,7 +57,7 @@ function json_comp( format, options ) {
     var runners = {};
     for (var i = 0; i < keys.length; i++) {
         if (format[keys[i]] != null && format[keys[i]].constructor === Object && constants[keys[i]] === undefined) {
-            runners[keys[i]] = json_comp(format[keys[i]]);
+            runners[keys[i]] = json_comp(format[keys[i]], options);
         }
     }
 
@@ -72,9 +72,10 @@ function json_comp( format, options ) {
     template.push(strings.shift());
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
+            var key = keys[i];
             // missing properties are faster to test than to read (as undefined)
-            if (runners[keys[i]]) template.push({ name: keys[i], encoder: runners[keys[i]] });
-            else template.push({ name: keys[i], encoder: null });
+            if (runners[key]) template.push({ name: key, encoder: runners[key], stringifier: buildStringifier(template[key], runners[key], options.default), stringify });
+            else template.push({ name: key, encoder: null, stringifier: buildStringifier(template[key], null, options.default), stringify });
             template.push(strings.shift());
         }
     }
@@ -96,20 +97,19 @@ function json_exec( encoder, obj ) {
 
     var json = '';
     for (var i = 0; i < len - 2; i += 2) {
-        json += template[i];
-
         var fmt = template[i + 1];
         var value = obj[fmt.name];
 
         // stringify the property value
         // a typeofToString table method lookup is slower, a switch on the type is slower
         // an external stringify() function is slower (and is only 1% of cpu)
-        if (value === null) json += 'null';
-        else if (value === undefined) json += defaultString;
-        else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
+        json += template[i];
+             if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
-        else if (typeof value === 'boolean') json += value ? 'true' : 'false';
         else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json += json_exec(fmt.encoder, value);
+        else if (typeof value === 'boolean') json += value ? 'true' : 'false';
+        //else if (value === null) json += 'null';
+        else if (value === undefined) json += defaultString;
         else json += JSON.stringify(value);
     }
     json += template[i];

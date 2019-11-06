@@ -26,9 +26,9 @@ module.exports = {
     },
 
     'should omit unknown properties': function(t) {
-        var je = json_comp({ b: 1, c: 2, d: 3 }, { default: 'missing' });
+        var je = json_comp({ b: 1, c: 2 }, { default: 'missing' });
         var str = je.exec({ a: 'one', b: 'two', c: 'three' });
-        t.equal(str, '{"b":"two","c":"three","d":"missing"}');
+        t.equal(str, '{"b":"two","c":"three"}');
         t.done();
     },
 
@@ -75,6 +75,8 @@ module.exports = {
             { o1: { a: 1 }, o2: { b: {} } },
             { a1: [1,2], a2: [3] },
             { a: [{ b: 1 }, 2] },
+            { a: new Date() },
+            { a: /foo/im },
         ];
 
         for (var i = 0; i < tests.length; i++) {
@@ -87,7 +89,7 @@ module.exports = {
         t.done();
     },
 
-    'should stringify fast 200k': function(t) {
+    'should test speed 200k': function(t) {
         var testObj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null };
         var nloops = 200000;
 
