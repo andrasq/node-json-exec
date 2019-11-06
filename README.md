@@ -3,7 +3,7 @@ json-exec
 [![Build Status](https://travis-ci.org/andrasq/node-json-exec.svg?branch=master)](https://travis-ci.org/andrasq/node-json-exec)
 [![Coverage Status](https://coveralls.io/repos/github/andrasq/node-json-exec/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-json-exec?branch=master)
 
-Fast templated json stringify.  Convenient API, very simple to use.  Great for logging, RPC,
+Fast templated json stringify.  Convenient API, very simple to use.  Use for logging, RPC,
 or other use cases where the object schema does not vary.
 
     const json_comp = require('json-exec').json_comp;
@@ -11,15 +11,18 @@ or other use cases where the object schema does not vary.
 
     const coder = json_comp({ name: 'String', age: 123 });
 
-    json_exec({ name: 'Mickey Mouse', age: 91, color: 'black' });
+    json_exec(coder, { name: 'Mickey Mouse', age: 91, color: 'black' });
     // => '{"name":"Mickey Mouse","age":91}'
-    json_exec({ name: 'Minnie Mouse' });
+
+    json_exec(coder, { name: 'Minnie Mouse' });
     // => '{"name":"Minnie Mouse","age":null}'
 
 For example, to speed up the logging of fixed-pattern objects:
 
     // auto-initialize the logline json encoder
     var loglineCoder = loglineCoder || json_comp(logObject);
+
+    // log the json string
     var logline = json_exec(loglineCoder, logObject);
     logger.log(logline);
 
