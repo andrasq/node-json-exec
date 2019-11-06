@@ -72,9 +72,9 @@ function json_comp( format, options ) {
     template.push(strings.shift());
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
-            if (runners[keys[i]]) template.push([keys[i], runners[keys[i]]]);
+            if (runners[keys[i]]) template.push({ name: keys[i], coder: runners[keys[i]] });
             // TODO: store in an object, not array
-            else template.push(keys[i]);
+            else template.push({ name: keys[i], coder: null });
             template.push(strings.shift());
         }
     }
@@ -88,13 +88,11 @@ function json_exec( encoder, obj ) {
     var len = template.length;
 
     var json = '';
-    for (var i = 0; i + 2 < len; i += 2) {
-        // preformatted quoted property name with : separator
+    for (var i = 0; i < len - 2; i += 2) {
         json += template[i];
 
-        // verbatim property name and corresponding value
-        var nestedCoder, name = template[i + 1];
-        if (Array.isArray(name)) { nestedCoder = name[1]; name = name[0]; }
+        var name = template[i + 1].name;
+        var nestedCoder = template[i + 1].coder;
         var value = obj[name];
 
         // stringify the property value
