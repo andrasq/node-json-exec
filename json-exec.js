@@ -119,6 +119,43 @@ function json_exec( encoder, obj ) {
     return json;
 }
 
+function buildStringifier( value, fmt, defaultString ) {
+    var _stringify = null;
+
+    if (value === null) return function(value, fmt) {
+        return (value === null) ? 'null' : stringify(value, fmt, defaultString) }
+    else if (value === undefined) return function(value, fmt) {
+        return (value === undefined) ? defaultString : stringify(value, fmt, defaultString) }
+    else if (typeof value === 'number') return function(value, fmt) {
+        return (value > -Infinity && value < Infinity) ? value : stringify(value, fmt, defaultString) }
+    else if (typeof value === 'string') return function(value, fmt) {
+        return (typeof value === 'string') ? jsonEncodeString(value) : stringify(value, fmt, defaultString) }
+    else if (typeof value === 'boolean') return function(value, fmt) {
+        return (typeof value === 'boolean') ? (value ? 'true' : 'false') : stringify(value, fmt, defaultString) }
+    else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) return function(value, fmt) {
+        return (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) ? fmt.encoder.exec(value) : stringify(value, fmt, defaultString) }
+    else return function(value, fmt) {
+        return stringify(value, fmt, defaultString) }
+
+    return _stringify;
+}
+
+// stringify the property value
+// a typeofToString table method lookup is slower, a switch on the type is slower
+// an external stringify() function is slower
+function stringify( value, fmt, defaultString ) {
+    var json;
+
+    if (value === null) json = 'null';
+    else if (value === undefined) json = defaultString;
+    else if (typeof value === 'number') json = (value > -Infinity && value < Infinity) ? value : 'null';
+    else if (typeof value === 'string') json = jsonEncodeString(value);
+    else if (typeof value === 'boolean') json = value ? 'true' : 'false';
+    else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json = json_exec(fmt.encoder, value);
+    else json = JSON.stringify(value);
+
+    return json;
+}
 
 function JsonExec( options ) {
     this.template = options.template;
@@ -149,7 +186,7 @@ function _needEscaping( str ) {
     }
     else {
         var len = str.length;
-        if (len > 100) return true;
+        if (len > 150) return true;
         for (var i = 0; i < len; i++) {
             var ch = str.charCodeAt(i);
             if (ch === 0x22 || ch === 0x5c || ch < 0x20 || ch >= 0x7f) return true;
