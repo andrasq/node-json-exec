@@ -13,10 +13,10 @@
 
 'use strict';
 
-module.exports = {
-    json_comp: json_comp,
-    json_exec: json_exec,
-};
+module.exports = JsonExec;
+module.exports.json_comp = json_comp;
+module.exports.json_exec = json_exec;
+
 
 /*
  * compile the object into a preformatted json template
@@ -26,11 +26,13 @@ module.exports = {
  * The template will always contain one more string constant than keys.
  *
  * Format is a sample object to use for the layout and any constant values.
+ *
+ * TODO: build a function that extracts the obj properties,
+ *       ie encode the layout in the code, not an array.
  */
 function json_comp( format, options ) {
     var options = options || {};
     var constants = options.const || {};
-    // TODO: add missing constants to the format
 
     var template = [];
     var keys = Object.keys(format);
@@ -47,7 +49,7 @@ function json_comp( format, options ) {
     var sample = {};
     for (var i = 0; i < keys.length; i++) {
         sample[keys[i]] = constants[keys[i]] !== undefined ? constants[keys[i]] : separator;
-        if (format[keys[i]] && format[keys[i]].constructor === Object) {
+        if (format[keys[i]] && format[keys[i]].constructor === Object && constants[keys[i]] === undefined) {
             // TODO: pin down const property handling, ie whether to allow nested or top-level-only const properties
             var runner = json_comp(format[keys[i]], { const: constants[keys[i]] });
             template.push(runner);
@@ -74,53 +76,60 @@ function json_comp( format, options ) {
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
             if (runners[keys[i]]) template.push([keys[i], runners[keys[i]]]);
+            // TODO: store in an object, not array
             else template.push(keys[i]);
             template.push(strings.shift());
         }
     }
 
-    return new JsonRunner({ template: template, default: options.default });
+    return new JsonExec({ template: template, default: options.default, const: options.const });
 }
 
 function json_exec( encoder, obj ) {
-    return encoder.exec(obj);
-}
-
-
-function JsonRunner( config ) {
-    this.template = config.template;
-    this.defaultValue = config.default || '-';
-}
-JsonRunner.prototype.exec = function exec( obj ) {
-    var defaultValue = this.defaultValue;
-    var template = this.template;
+    var template = encoder.template;
+    var defaultString = encoder.defaultString;
     var len = template.length;
-
-    // TODO: build a function that extracts the obj properties,
-    // ie encode the layout in the code, not an array.
 
     var json = '';
     for (var i = 0; i + 2 < len; i += 2) {
-        // preformatted key name with separator
+        // preformatted quoted property name with : separator
         json += template[i];
-        // literal key name
-        var name = template[i + 1];
-        // TODO: store in an object, not array
-        if (Array.isArray(name)) { var comp = name[1]; name = name[0]; }
+
+        // verbatim property name
+        var nestedCoder, name = template[i + 1];
+        if (Array.isArray(name)) { nestedCoder = name[1]; name = name[0]; }
         var value = obj[name];
+
+        // stringify the property value
         if (value === null) json += 'null';
-        else if (value === undefined) json += defaultValue;
+        else if (value === undefined) json += defaultString;
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
-        // recursively exec-d sub-object value
-        else if (typeof value === 'object' && value != null && !Array.isArray(value)) json += json_exec(comp, value);
-        // stringified value
+        else if (typeof value === 'object' && !Array.isArray(value)) json += json_exec(nestedCoder, value); // recursive object
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
         else json += JSON.stringify(value);
     }
     json += template[i];
 
     return json;
+}
+
+
+function JsonExec( options ) {
+    this.template = options.template;
+    this.defaultString = JSON.stringify(options.default !== undefined ? options.default : '-');
+    this.const = options.const;
+}
+JsonExec.comp = function comp( template, options ) {
+    return json_comp(template, options);
+}
+JsonExec.prototype.comp = function comp( template, options ) {
+    var je = json_comp(template, options);
+    for (var k in je) this[k] = je[k];
+    return this;
+}
+JsonExec.prototype.exec = function exec( obj ) {
+    return json_exec(this, obj);
 }
 
 // stringify the item like json, except undefined is encoded as null.
@@ -153,7 +162,7 @@ function _needEscaping( str ) {
 }
 **/
 
-toStruct(JsonRunner.prototype);
+toStruct(JsonExec.prototype);
 function toStruct(hash) { return toStruct.prototype = hash }
 
 
@@ -164,8 +173,8 @@ try { var fastjsonstringify = require('fast-json-stringify'); } catch (e) {}
 var timeit = require('qtimeit');
 
 var x;
-console.log(x = json_comp({a:1, b:2, c:null}, { const: { c: 777 } }));
-console.log(x.exec({a:123, c: 2, b:"foo\n"}));
+console.log(x = json_comp({a:1, b:2, c:null, d:1}, { const: { c: 777 } }));
+console.log(json_exec(x, {a:123, c: 2, b:"foo\n"}));
 
 var obj = { a: { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null } };
 var obj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null };
@@ -216,12 +225,13 @@ var logline = {
 var obj = logline;
 //var obj = { a: 'test' };
 
-var nloops = 500000;
+var nloops = 200000;
 var je = json_comp(obj);
 timeit(nloops, function() { x = JSON.stringify(obj) });
 // 258k/s
 // ABC: 1.0m/s
 timeit(nloops, function() { x = je.exec(obj) });
+timeit(nloops, function() { x = json_exec(je, obj) });
 console.log(x);
 // 441k/s
 // ABC: 1.7m/s

@@ -2,25 +2,48 @@
 
 var util = require('util');
 
+var JsonExec = require('./');
 var json_comp = require('./').json_comp;
 var json_exec = require('./').json_exec;
 
 module.exports = {
-    'should compile template': function(t) {
-        t.equal(typeof json_comp({}), 'object');
+    'should compile template with function': function(t) {
+        t.ok(json_comp({}) instanceof JsonExec);
         t.done();
     },
 
-    'should exec template': function(t) {
-        t.skip();
+    'should compile with class method': function(t) {
+        t.ok(JsonExec.comp({ a: 1 }) instanceof JsonExec);
+        t.done();
+    },
+
+    'should compile and exec with instance methods': function(t) {
+        var je = json_comp({ a: 1 });
+        t.ok(je instanceof JsonExec);
+        je = je.comp({ b: 1 });
+        t.equal(je.exec({ a: 1, b: 2 }), '{"b":2}');
+        t.done();
     },
 
     'should omit unknown properties': function(t) {
-        t.skip();
+        var je = json_comp({ b: 1, c: 2, d: 3 }, { default: 'missing' });
+        var str = je.exec({ a: 'one', b: 'two', c: 'three' });
+        t.equal(str, '{"b":"two","c":"three","d":"missing"}');
+        t.done();
     },
 
-    'should encode missing properties as null': function(t) {
-        t.skip();
+    'should encode missing properties as default': function(t) {
+        var je = json_comp({ a: 1, b: 2 }, { default: 999 });
+        var str = je.exec({ a: 'one', c: 3 });
+        t.equal(str, '{"a":"one","b":999}');
+        t.done();
+    },
+
+    'should encode missing undefined properties as default': function(t) {
+        var coder = json_comp({ a: 1, b: 2 }, { default: '-' });
+        var obj = JSON.parse(json_exec(coder, { a: 234 }));
+        t.deepEqual(obj, { a: 234, b: '-' });
+        t.done();
     },
 
     'should not change constant properties': function(t) {
@@ -37,6 +60,7 @@ module.exports = {
             //2.5,
             {},
             { n: 1234 },
+            { n1: NaN, n2: Infinity, n3: -Infinity },
             { s: 'string' },
             { utf8: 'a\xff\xf8b' },
             { b1: true, b2: false },
@@ -58,7 +82,7 @@ module.exports = {
 
     'should stringify fast 200k': function(t) {
         var testObj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null };
-        var nloops = 1000000;
+        var nloops = 100000;
 
         var t1 = Date.now();
         for (var i = 0; i < nloops; i++) var x = JSON.stringify(testObj);
