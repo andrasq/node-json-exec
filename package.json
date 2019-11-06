@@ -1,0 +1,19 @@
+{
+  "name": "json-exec",
+  "description": "fast templated json stringify",
+  "version": "0.0.0",
+  "main": "json-exec",
+  "author": "andrasq",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrasq/node-json-exec"
+  },
+  "keywords": [ "json", "fast", "compile", "execute", "templated" ],
+
+  "scripts": {
+    "test": "qnit test-*",
+    "coverage": "nyc -r text -r lcov npm test",
+    "clean": "rm -rf .nyc_output coverage"
+  }
+}
