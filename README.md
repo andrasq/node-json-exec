@@ -3,8 +3,10 @@ json-exec
 [![Build Status](https://travis-ci.org/andrasq/node-json-exec.svg?branch=master)](https://travis-ci.org/andrasq/node-json-exec)
 [![Coverage Status](https://coveralls.io/repos/github/andrasq/node-json-exec/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-json-exec?branch=master)
 
-Fast templated json stringify.  Convenient API, very simple to use.  Use for logging, RPC,
-or other use cases where the object schema does not vary.
+Fast templated json stringify.  Convenient API, very simple to use.  Like JSON.stringify,
+but optimized for objects that are likely to share a common schema.
+
+Use for logging, RPC, or other use cases where the object schema does not vary.
 
     const json_comp = require('json-exec').json_comp;
     const json_exec = require('json-exec').json_exec;
@@ -44,12 +46,14 @@ by JSON.stringify).
 ### string = json_exec( encoder, dataObject )
 
 Use the encoder to stringify the data object according to the template.  Missing values are
-not skipped, they're stringified as `null`.
+not skipped, they're stringified as `null`.  Properties that were not present in the template
+are omitted.
 
 
 Changelog
 ----------------
 
+- 0.1.2 - bug fixes, speedups
 - 0.1.0 - initial version with `json_comp` and `json_exec`
 
 
