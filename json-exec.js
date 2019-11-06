@@ -73,8 +73,8 @@ function json_comp( format, options ) {
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
             // missing properties are faster to test than to read (as undefined)
-            if (runners[keys[i]]) template.push({ name: keys[i], coder: runners[keys[i]] });
-            else template.push({ name: keys[i], coder: null });
+            if (runners[keys[i]]) template.push({ name: keys[i], encoder: runners[keys[i]] });
+            else template.push({ name: keys[i], encoder: null });
             template.push(strings.shift());
         }
     }
@@ -82,6 +82,13 @@ function json_comp( format, options ) {
     return new JsonExec({ template: template, default: options.default, const: options.const });
 }
 
+/*
+ * stringify the object properties built into the template
+ *
+ * The template contains the stringified property names to stringify
+ * interleaved with property descriptors `{name,encoder}` used to
+ * look up the property value and stringify object values, respectively.
+ */
 function json_exec( encoder, obj ) {
     var template = encoder.template;
     var defaultString = encoder.defaultString;
@@ -102,7 +109,7 @@ function json_exec( encoder, obj ) {
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
-        else if (typeof value === 'object' && fmt.coder && !Array.isArray(value)) json += json_exec(fmt.coder, value);
+        else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json += json_exec(fmt.encoder, value);
         else json += JSON.stringify(value);
     }
     json += template[i];
