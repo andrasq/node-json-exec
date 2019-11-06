@@ -74,8 +74,8 @@ function json_comp( format, options ) {
         if (constants[keys[i]] === undefined) {
             var key = keys[i];
             // missing properties are faster to test than to read (as undefined)
-            if (runners[key]) template.push({ name: key, encoder: runners[key], stringifier: (buildStringifier(template[key], runners[key], options.default), stringify) });
-            else template.push({ name: key, encoder: null, stringifier: (buildStringifier(template[key], null, options.default), stringify) });
+            if (runners[key]) template.push({ name: key, encoder: runners[key] /*, stringifier: (buildStringifier(template[key], runners[key], options.default), stringify) */ });
+            else template.push({ name: key, encoder: null /*, stringifier: (buildStringifier(template[key], null, options.default), stringify) */ });
             template.push(strings.shift());
         }
     }
@@ -95,7 +95,7 @@ function json_exec( encoder, obj ) {
     var defaultString = encoder.defaultString;
     var len = template.length;
 
-    if (value === null) return 'null';
+    if (obj === null) return 'null';
 
     var json = '';
     for (var i = 0; i < len - 2; i += 2) {
@@ -119,6 +119,7 @@ function json_exec( encoder, obj ) {
     return json;
 }
 
+/**
 function buildStringifier( value, fmt, defaultString ) {
     var _stringify = null;
 
@@ -156,6 +157,7 @@ function stringify( value, fmt, defaultString ) {
 
     return json;
 }
+**/
 
 function JsonExec( options ) {
     this.template = options.template;
