@@ -95,6 +95,8 @@ function json_exec( encoder, obj ) {
     var defaultString = encoder.defaultString;
     var len = template.length;
 
+    if (value === null) return 'null';
+
     var json = '';
     for (var i = 0; i < len - 2; i += 2) {
         var fmt = template[i + 1];
@@ -108,7 +110,7 @@ function json_exec( encoder, obj ) {
         else if (typeof value === 'string') json += jsonEncodeString(value);
         else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json += json_exec(fmt.encoder, value);
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
-        //else if (value === null) json += 'null';
+        else if (value === null) json += 'null';
         else if (value === undefined) json += defaultString;
         else json += JSON.stringify(value);
     }
