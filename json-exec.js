@@ -166,9 +166,52 @@ console.log(x = json_comp({a:1, b:2, c:null}, { const: { c: 777 } }));
 console.log(x.exec({a:123, c: 2, b:"foo\n"}));
 
 var obj = { a: { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null } };
-var obj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: 0 };
+var obj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: null };
+var obj = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: 'null' };
 //var obj = { a: { b: { c: { d: { e: 1 } } } } };
-//var obj = require('../../qbson/test/logline');
+var logline = {
+      "name" : "MyApp",
+      "hostname" : "server",
+      "pid" : 22467,
+      "audit" : true,
+      "level" : "info",
+      "remoteAddress" : "127.0.0.1",
+      "remotePort" : 58539,
+      "req_id" : "-",
+      "req" : {
+        "method" : "GET",
+        "url" : "/healthcheck",
+        "headers" : {
+          "host" : "localhost:8888"
+        },
+        "httpVersion" : "1.1",
+        "trailers" : {
+        },
+        "version" : "1.0.0",
+        "timers" : {
+        }
+      },
+      "res" : {
+        "statusCode" : 200,
+        "trailer" : false
+      },
+      "rusage" : {
+        "utime" : 0,
+        "stime" : 0,
+        "wtime" : 0.00018252001609653234,
+        "maxrss" : 0,
+        "inblock" : 0,
+        "oublock" : 0
+      },
+      "query" : 'null',         // was null, cannot auto-build strfy template
+      "latency" : 'null',       // was null
+      "_audit" : true,
+      "msg" : "handled: 200",
+      "time" : "2015-01-15T05:04:55.114Z",
+      "v" : 0,
+      "requestId" : "-"
+}
+var obj = logline;
 //var obj = { a: 'test' };
 
 var je = json_comp(obj);
@@ -180,11 +223,15 @@ console.log(x);
 // 441k/s
 // ABC: 1.7m/s
 if (fastjsonstringify) {
-    var schema = { title: 'speed test', type: 'object', properties: {} };
+var templatize = function(obj) {
+    var properties = {};
     for (var k in obj) {
-        // if (obj[k] && typeof obj[k] == 'object') // TODO: recurse into sub-object
-        schema.properties[k] = { type: typeof obj[k] };
+        if (obj[k] && typeof obj[k] == 'object' && obj[k].constructor === Object) properties[k] = { type: 'object', properties: templatize(obj[k]) }
+        else properties[k] = { type: typeof obj[k] };
     }
+    return properties;
+}
+    var schema = { type: 'object', properties: templatize(obj) };
     var strfy = fastjsonstringify(schema);
     timeit(100000, function() { x = strfy(obj) });
 }
