@@ -91,9 +91,8 @@ function json_exec( encoder, obj ) {
     for (var i = 0; i < len - 2; i += 2) {
         json += template[i];
 
-        var name = template[i + 1].name;
-        var nestedCoder = template[i + 1].coder;
-        var value = obj[name];
+        var fmt = template[i + 1];
+        var value = obj[fmt.name];
 
         // stringify the property value
         // a typeofToString table method lookup is slower, a switch on the type is slower
@@ -103,7 +102,7 @@ function json_exec( encoder, obj ) {
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
-        else if (typeof value === 'object' && nestedCoder && !Array.isArray(value)) json += json_exec(nestedCoder, value);
+        else if (typeof value === 'object' && fmt.coder && !Array.isArray(value)) json += json_exec(fmt.coder, value);
         else json += JSON.stringify(value);
     }
     json += template[i];
