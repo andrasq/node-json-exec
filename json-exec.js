@@ -104,8 +104,8 @@ function json_exec( encoder, obj ) {
         else if (value === undefined) json += defaultString;
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
-        else if (typeof value === 'object' && !Array.isArray(value)) json += json_exec(nestedCoder, value); // recursive object
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
+        else if (typeof value === 'object' && nestedCoder && !Array.isArray(value)) json += json_exec(nestedCoder, value);
         else json += JSON.stringify(value);
     }
     json += template[i];

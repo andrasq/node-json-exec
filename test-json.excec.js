@@ -110,6 +110,14 @@ module.exports = {
     },
 
     'edge cases': {
+        'should encode unexpected objects': function(t) {
+            var je = json_comp({ a: 1 });
+            var str = je.exec({ a: { b: 2 } });
+            var obj = JSON.parse(str);
+            t.deepEqual(obj, { a: { b: 2 } });
+            t.done();
+        },
+
         'should json encode strings on node-v10': function(t) {
             var ver = process.version;
             Object.defineProperty(process, 'version', { value: 'v10.15.0' });
