@@ -37,6 +37,19 @@ Use the encoder to stringify the data object according to the template.  Missing
 not skipped, they're stringified as `null`.
 
 
+Changelog
+----------------
+
+- 0.1.0 - initial version
+
+
+Todo
+----------------
+
+- allow a different default for missing properties other than `null`
+- allow for constant properties that will not be re-stringified each time
+
+
 Related Work
 ----------------
 
