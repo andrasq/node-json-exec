@@ -2,6 +2,8 @@
 
 var qtimeit = require('qtimeit');
 var JsonExec = require('./');
+var json_comp = JsonExec.json_comp;
+var json_exec = JsonExec.json_exec;
 
 try { var fastjsonstringify = require('fast-json-stringify'); } catch (e) {}
 
@@ -62,11 +64,11 @@ var bench = {
     },
 
     'json_comp': function() {
-        je = JsonExec.comp(data);
+        je = json_comp(data);
     },
 
     'json_exec': function() {
-        x = je.exec(data);
+        x = json_exec(je, data);
     },
 };
 if (fastjsonstringify) {
