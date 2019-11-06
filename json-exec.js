@@ -117,7 +117,7 @@ function json_exec( encoder, obj ) {
 
 function JsonExec( options ) {
     this.template = options.template;
-    this.defaultString = JSON.stringify(options.default !== undefined ? options.default : '-');
+    this.defaultString = JSON.stringify(options.default !== undefined ? options.default : null);
     this.const = options.const;
 }
 JsonExec.comp = function comp( template, options ) {

@@ -32,6 +32,13 @@ module.exports = {
         t.done();
     },
 
+    'should encode missing properties as null': function(t) {
+        var je = json_comp({ a: 1, b: 2 });
+        var str = je.exec({ a: 'one', c: 3 });
+        t.equal(str, '{"a":"one","b":null}');
+        t.done();
+    },
+
     'should encode missing properties as default': function(t) {
         var je = json_comp({ a: 1, b: 2 }, { default: 999 });
         var str = je.exec({ a: 'one', c: 3 });
