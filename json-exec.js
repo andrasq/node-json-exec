@@ -86,9 +86,9 @@ function json_comp( format, options ) {
 /*
  * stringify the object properties built into the template
  *
- * The template contains the stringified property names to stringify
- * interleaved with property descriptors `{name,encoder}` used to
- * look up the property value and stringify object values, respectively.
+ * The template contains the stringified property names to interleave
+ * with stringified property descriptors `{name,encoder}` used to look up
+ * the property value and stringify object values, respectively.
  */
 function json_exec( encoder, obj ) {
     var template = encoder.template;
