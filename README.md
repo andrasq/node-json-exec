@@ -3,7 +3,7 @@ json-exec
 [![Build Status](https://travis-ci.org/andrasq/node-json-exec.svg?branch=master)](https://travis-ci.org/andrasq/node-json-exec)
 [![Coverage Status](https://coveralls.io/repos/github/andrasq/node-json-exec/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-json-exec?branch=master)
 
-Fast templated json stringify.  Convenient API, very simple to use.  Like JSON.stringify,
+Fast precopmiled json stringify.  Convenient API, very simple to use.  Like JSON.stringify,
 but optimized for objects that are likely to share a common schema.
 
 Use for logging, RPC, or other use cases where the object schema does not vary.
