@@ -141,9 +141,9 @@ function buildStringifier( value, fmt, defaultString ) {
     return _stringify;
 }
 
-// stringify the property value
+// general-purpose stringifier, a fall-back in case the stringifier function guessed wrong
 // a typeofToString table method lookup is slower, a switch on the type is slower
-// an external stringify() function is slower
+// an external stringify() function is slower, a switch (true) is slower
 function stringify( value, fmt, defaultString ) {
     var json;
 
