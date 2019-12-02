@@ -92,6 +92,17 @@ module.exports = {
         t.done();
     },
 
+    'should stringify strings': function(t) {
+        var je = json_comp({ a: 'string' });
+        for (var ch = 0; ch < 0x1000; ch++) {
+            var str = String.fromCharCode(ch);
+            var str2 = String.fromCharCode(ch) + String.fromCharCode(ch);;
+            t.equal(json_exec(je, { a: str }), JSON.stringify({ a: str }));
+            t.equal(json_exec(je, { a: str2 }), JSON.stringify({ a: str2 }));
+        }
+        t.done();
+    },
+
     'should stringify items': function(t) {
         var date = new Date();
         date.v = 123;
