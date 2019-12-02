@@ -91,6 +91,9 @@ if (fastjsonstringify) {
     }
     var schema = { type: 'object', properties: templatize(data) };
     var strfy = fastjsonstringify(schema);
+    bench['fast-json-templatize'] = function() {
+        x = { type: 'object', properties: templatize(data) };
+    }
     bench['fast-json-stringify'] = function() {
         x = strfy(data);
     }
