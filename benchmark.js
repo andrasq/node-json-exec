@@ -57,7 +57,7 @@ var logline = {
 //var data = { a: 'ABC', b: 1, c: 'DEFGHI\xff', d: 1234.567, e: 'null' };
 var data = logline;
 
-var x, je = JsonExec.comp(data);
+var x, jx, je = JsonExec.comp(data);
 var bench = {
     'JSON.stringify': function() {
         x = JSON.stringify(data);
@@ -68,7 +68,7 @@ var bench = {
     },
 
     'json_exec': function() {
-        x = json_exec(je, data);
+        jx = json_exec(je, data);
     },
 };
 if (fastjsonstringify) {
@@ -101,7 +101,8 @@ if (fastjsonstringify) {
 
 qtimeit.bench.timeGoal = 0.41;
 qtimeit.bench.visualize = true;
-for (var i = 0; i < 5; i++) {
+for (var i = 0; i < 3; i++) {
     qtimeit.bench(bench);
     qtimeit.bench.showPlatformInfo = false;
 }
+console.log(jx);
