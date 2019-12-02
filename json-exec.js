@@ -134,22 +134,25 @@ function jsonTypeof( value ) {
 
 /*
  * return a function that will stringify the given json type
+ * TODO: if stringifying a Date with template {a:1}, scrape properties? or toJSON?
  */
 function buildJsonConverter( type, defaultString ) {
     switch (type) {
-    case 'null': return function() { return 'null' }; break;
-    case 'undefined': return function() { return defaultString }; break;
-    case 'number': return function(value) { return (value > -Infinity && value < Infinity) ? value : 'null' }; break;
-    case 'boolean': return function(value) { return value ? 'true' : 'false' }; break;
-    case 'string': return function(value) { return jsonEncodeString(value) }; break;
-    default:
+    case 'null': return function() { return 'null' };
+    case 'number': return function(value) { return (value > -Infinity && value < Infinity) ? value : 'null' };
+    case 'boolean': return function(value) { return value ? 'true' : 'false' };
+    case 'string': return function(value) { return jsonEncodeString(value) };
+
     case 'symbol': // symbol properties are omitted
     case 'bigint': // bigints throw
+    case 'undefined': return function() { return defaultString };
+
     case 'object':
+    default:
         return function(value, fmt) {
             if (!Array.isArray(value) && fmt.encoder && value) return fmt.encoder.exec(value);
-            else return JSON.stringify(value);
-        }; break;
+            return JSON.stringify(value);
+        };
     }
 }
 

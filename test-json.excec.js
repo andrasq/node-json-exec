@@ -60,7 +60,39 @@ module.exports = {
         t.done();
     },
 
+    'converters functions should stringify their type': function(t) {
+        var tests = [
+            { type: 'null', value: null, expect: 'null' },
+            { type: 'undefined', value: undefined, expect: '(default)' },
+            { type: 'number', value: 1, expect: '1' },
+            { type: 'number', value: 2.5, expect: '2.5' },
+            { type: 'number', value: NaN, expect: 'null' },
+            { type: 'number', value: Infinity, expect: 'null' },
+            { type: 'number', value: -Infinity, expect: 'null' },
+            { type: 'boolean', value: true, expect: 'true' },
+            { type: 'boolean', value: false, expect: 'false' },
+            { type: 'string', value: 'foobar', expect: '"foobar"' },
+            { type: 'string', value: 'foobar\xff\n', expect: '"foobar\xff\\n"' },
+            { type: 'symbol', value: Symbol('foo'), expect: '(default)' },
+            { type: 'bigint', value: 123, expect: '(default)' },
+            { type: 'object', value: {}, expect: '{}' },
+            { type: 'object', value: { a: 1 }, expect: '{"a":1}' },
+            { type: 'object', value: { a: 1, b: { c: 3 } }, expect: '{"a":1,"b":{"c":3}}' },
+
+            { type: 'object', value: null, expect: 'null' },
+        ];
+
+        for (var i = 0; i < tests.length; i++) {
+            var converters = JsonExec.buildJsonConverters('(default)');
+            t.equal(converters[tests[i].type](tests[i].value, {}), tests[i].expect, require('util').inspect(tests[i]));
+        }
+
+        t.done();
+    },
+
     'should stringify items': function(t) {
+        var date = new Date();
+        date.v = 123;
         var tests = [
             //null,
             //1,
@@ -77,6 +109,10 @@ module.exports = {
             { a: [{ b: 1 }, 2] },
             { a: new Date() },
             { a: /foo/im },
+
+            // FIXME: how should these be handled?
+            // { v: date },
+            // date,
         ];
 
         for (var i = 0; i < tests.length; i++) {
@@ -117,6 +153,21 @@ module.exports = {
             var str = je.exec({ a: { b: 2 } });
             var obj = JSON.parse(str);
             t.deepEqual(obj, { a: { b: 2 } });
+            t.done();
+        },
+
+        'should encode non-objects': function(t) {
+            var tests = [
+                [null, 'null'],
+                [undefined, 'null'],
+                [1, '{"a":"??"}'],
+                ["seven", '{"a":"??"}'],
+            ];
+
+            for (var i = 0; i < tests.length; i++) {
+                var je = json_comp({ a: 1 }, { default: '??' });
+                t.equal(json_exec(je, tests[i][0]), tests[i][1]);
+            }
             t.done();
         },
 
