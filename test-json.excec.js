@@ -6,6 +6,8 @@ var JsonExec = require('./');
 var json_comp = require('./').json_comp;
 var json_exec = require('./').json_exec;
 
+if (typeof Symbol === 'undefined') var Symbol = function(name) { return String(name) };
+
 module.exports = {
     'should compile template with function': function(t) {
         t.ok(json_comp({}) instanceof JsonExec);
