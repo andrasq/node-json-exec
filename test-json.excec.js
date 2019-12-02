@@ -150,6 +150,12 @@ module.exports = {
     },
 
     'edge cases': {
+        'should handle an empty template': function(t) {
+            var je = json_comp({});
+            t.equal(json_exec(je, { a: 1 }), "{}");
+            t.done();
+        },
+
         'should encode unexpected objects': function(t) {
             var je = json_comp({ a: 1 });
             var str = je.exec({ a: { b: 2 } });
