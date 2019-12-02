@@ -100,7 +100,7 @@ function json_exec( encoder, obj ) {
     var template = encoder.template;
     var converters = encoder.converters;
 
-    if (obj === null) return 'null';
+    if (!obj && obj == null) return 'null';
 
     var limit = template.length - 2;
     var json = '';
