@@ -73,9 +73,15 @@ function json_comp( format, options ) {
     for (var i = 0; i < keys.length; i++) {
         if (constants[keys[i]] === undefined) {
             var key = keys[i];
-            // missing properties are faster to test than to read (as undefined)
-            if (runners[key]) template.push({ name: key, encoder: runners[key] /*, stringifier: (buildStringifier(template[key], runners[key], options.default), stringify) */ });
-            else template.push({ name: key, encoder: null /*, stringifier: (buildStringifier(template[key], null, options.default), stringify) */ });
+            var value = format[key];
+            var fmt = {
+                name: key,
+                type: jsonTypeof(value),
+                converter: JsonExec.buildJsonConverters(options.default)[jsonTypeof(value)],
+                encoder: null,
+            };
+            if (runners[key]) fmt.encoder = runners[key];
+            template.push(fmt);
             template.push(strings.shift());
         }
     }
@@ -92,58 +98,66 @@ function json_comp( format, options ) {
  */
 function json_exec( encoder, obj ) {
     var template = encoder.template;
-    var defaultString = encoder.defaultString;
-    var len = template.length;
+    var converters = encoder.converters;
 
     if (obj === null) return 'null';
 
+    var limit = template.length - 2;
     var json = '';
-    for (var i = 0; i < len - 2; i += 2) {
+    for (var i = 0; i < limit; i += 2) {
         var fmt = template[i + 1];
         var value = obj[fmt.name];
 
-        // stringify the property value
-        // a typeofToString table method lookup is slower, a switch on the type is slower
-        // an external stringify() function is slower (and is only 1% of cpu)
+        // stringify the property name
         json += template[i];
-             if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
+
+        // stringify the property value
+        // json += value === null ? 'null' : converters[typeof value](value, fmt); // 330k/s
+        if (value === null) json += 'null';
+        else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
-        else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json += json_exec(fmt.encoder, value);
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
-        else if (value === null) json += 'null';
-        else if (value === undefined) json += defaultString;
-        else json += JSON.stringify(value);
+//        else if (typeof value === fmt.type) json += fmt.converter(value, fmt);
+//        else if (typeof value === 'object') json += converters.object(value, fmt);
+        else json += converters[typeof value](value, fmt);
+        // 480k/s, faster to re-typeof each time than to store typename
     }
     json += template[i];
 
     return json;
 }
 
-/**
-function buildStringifier( value, fmt, defaultString ) {
-    var _stringify = null;
+function jsonTypeof( value ) {
+    // one of: null undefined number string boolean object symbol bigint
+    return value === null ? 'null' : typeof value;
+}
 
-    if (value === null) return function(value, fmt) {
-        return (value === null) ? 'null' : stringify(value, fmt, defaultString) }
-    else if (value === undefined) return function(value, fmt) {
-        return (value === undefined) ? defaultString : stringify(value, fmt, defaultString) }
-    else if (typeof value === 'number') return function(value, fmt) {
-        return (value > -Infinity && value < Infinity) ? value : stringify(value, fmt, defaultString) }
-    else if (typeof value === 'string') return function(value, fmt) {
-        return (typeof value === 'string') ? jsonEncodeString(value) : stringify(value, fmt, defaultString) }
-    else if (typeof value === 'boolean') return function(value, fmt) {
-        return (typeof value === 'boolean') ? (value ? 'true' : 'false') : stringify(value, fmt, defaultString) }
-    else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) return function(value, fmt) {
-        return (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) ? fmt.encoder.exec(value) : stringify(value, fmt, defaultString) }
-    else return function(value, fmt) {
-        return stringify(value, fmt, defaultString) }
-
-    return _stringify;
+/*
+ * return a function that will stringify the given json type
+ */
+function buildJsonConverter( type, defaultString ) {
+    switch (type) {
+    case 'null': return function() { return 'null' }; break;
+    case 'undefined': return function() { return defaultString }; break;
+    case 'number': return function(value) { return (value > -Infinity && value < Infinity) ? value : 'null' }; break;
+    case 'boolean': return function(value) { return value ? 'true' : 'false' }; break;
+    case 'string': return function(value) { return jsonEncodeString(value) }; break;
+    default:
+    case 'symbol': // symbol properties are omitted
+    case 'bigint': // bigints throw
+    case 'object':
+        return function(value, fmt) {
+            if (!Array.isArray(value) && fmt.encoder && value) return fmt.encoder.exec(value);
+            else return JSON.stringify(value);
+        }; break;
+    }
 }
 
 // general-purpose stringifier, a fall-back in case the stringifier function guessed wrong
 // a typeofToString table method lookup is slower, a switch on the type is slower
-// an external stringify() function is slower, a switch (true) is slower
+// an external stringify() function is slower, a switch (true) is slower,
+// a pure type table lookup conversion is slower
+/**
 function stringify( value, fmt, defaultString ) {
     var json;
 
@@ -163,6 +177,21 @@ function JsonExec( options ) {
     this.template = options.template;
     this.defaultString = JSON.stringify(options.default !== undefined ? options.default : null);
     this.const = options.const;
+
+    this.converters = JsonExec.buildJsonConverters(this.defaultString);
+    var self = this;
+}
+JsonExec.jsonConverters = {};
+JsonExec.buildJsonConverters = function buildJsonConverters( defaultString ) {
+    if (!JsonExec.jsonConverters[defaultString]) {
+        JsonExec.jsonConverters[defaultString] = {};
+        ['null', 'undefined', 'number', 'string', 'boolean', 'object', 'symbol', 'bigint']
+            .forEach(function(type) {
+                JsonExec.jsonConverters[defaultString][type] = buildJsonConverter(type, defaultString);
+            });
+        toStruct(JsonExec.jsonConverters[defaultString]);
+    }
+    return JsonExec.jsonConverters[defaultString];
 }
 JsonExec.comp = function comp( template, options ) {
     return json_comp(template, options);
