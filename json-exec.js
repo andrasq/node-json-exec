@@ -144,7 +144,7 @@ function buildJsonConverter( type, defaultString ) {
     case 'string': return function(value) { return jsonEncodeString(value) };
 
     case 'symbol': // symbol properties are omitted
-    case 'bigint': // bigints throw
+    case 'bigint': // bigints normally throw (TODO?)
     case 'undefined': return function() { return defaultString };
 
     case 'object':
