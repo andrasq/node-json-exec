@@ -11,6 +11,7 @@
   },
   "keywords": [ "json", "fast", "compile", "execute", "templated" ],
   "files": ["json-exec.js", "README.md", "LICENSE"],
+  "readme": "see README.md",
 
   "scripts": {
     "benchmark": "node benchmark.js",
