@@ -165,15 +165,41 @@ function stringify( value, fmt, defaultString ) {
     var json;
 
     if (value === null) json = 'null';
-    else if (value === undefined) json = defaultString;
+    // symbols, bigints and undefineds are omitted
+    else if (typeof value === 'symbol' || typeof value === 'bigint' || typeof value === 'undefined') json = defaultString;
     else if (typeof value === 'number') json = (value > -Infinity && value < Infinity) ? value : 'null';
     else if (typeof value === 'string') json = jsonEncodeString(value);
     else if (typeof value === 'boolean') json = value ? 'true' : 'false';
-    else if (typeof value === 'object' && fmt.encoder && !Array.isArray(value)) json = json_exec(fmt.encoder, value);
-    else json = JSON.stringify(value);
+    else if (typeof value === 'object' && isHash(value)) {
+        // expected object {}
+        if (fmt && fmt.encoder) {
+            json = json_exec(fmt.encoder, value);
+        }
+        // unexpected hash {}
+        else {
+            json = '';
+            var keys = Object.keys(value);
+            for (var i=0; i<keys.length; i++) {
+                if (json) json += ',';
+                json += jsonEncodeString(keys[i]);
+                json += ':' + stringify(value[keys[i]], null, defaultString);
+            }
+            json = '{' + json + '}';
+        }
+    }
+    else if (Array.isArray(value)) {
+        var json = '';
+        for (var i=0; i<value.length; i++) json += (json ? ',' : '') + stringify(value[i], null, defaultString);
+        json = '[' + json + ']';
+    }
+    else {
+        // unexpected object eg Date
+        json = JSON.stringify(value);
+    }
 
     return json;
 }
+function isHash(o) { return o && o.constructor === Object }
 **/
 
 function JsonExec( options ) {
