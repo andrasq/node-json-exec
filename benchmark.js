@@ -89,10 +89,13 @@ if (fastjsonstringify) {
         }
         return properties;
     }
-    var schema = { type: 'object', properties: templatize(data) };
-    var strfy = fastjsonstringify(schema);
+
+    var template, strfy;
     bench['fast-json-templatize'] = function() {
-        x = { type: 'object', properties: templatize(data) };
+        template = { type: 'object', properties: templatize(data) };
+    }
+    bench['fast-json-comp'] = function() {
+        strfy = fastjsonstringify(template);
     }
     bench['fast-json-stringify'] = function() {
         x = strfy(data);
@@ -101,7 +104,7 @@ if (fastjsonstringify) {
 
 qtimeit.bench.timeGoal = 0.41;
 qtimeit.bench.visualize = true;
-for (var i = 0; i < 3; i++) {
+for (var i = 0; i < 1; i++) {
     qtimeit.bench(bench);
     qtimeit.bench.showPlatformInfo = false;
 }
