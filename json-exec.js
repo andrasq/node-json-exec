@@ -164,12 +164,9 @@ function buildJsonConverter( type, defaultString ) {
 function stringify( value, fmt, defaultString ) {
     var json;
 
-    if (value === null) json = 'null';
+    if (value == null) json = (value === null) ? 'null' : defaultString;
+    // if (value === null) json = 'null';
     // symbols, bigints and undefineds are omitted
-    else if (typeof value === 'symbol' || typeof value === 'bigint' || typeof value === 'undefined') json = defaultString;
-    else if (typeof value === 'number') json = (value > -Infinity && value < Infinity) ? value : 'null';
-    else if (typeof value === 'string') json = jsonEncodeString(value);
-    else if (typeof value === 'boolean') json = value ? 'true' : 'false';
     else if (typeof value === 'object' && isHash(value)) {
         // expected object {}
         if (fmt && fmt.encoder) {
@@ -192,6 +189,10 @@ function stringify( value, fmt, defaultString ) {
         for (var i=0; i<value.length; i++) json += (json ? ',' : '') + stringify(value[i], null, defaultString);
         json = '[' + json + ']';
     }
+    else if (typeof value === 'symbol' || typeof value === 'bigint' || typeof value === 'undefined') json = defaultString;
+    else if (typeof value === 'number') json = (value > -Infinity && value < Infinity) ? value : 'null';
+    else if (typeof value === 'string') json = jsonEncodeString(value);
+    else if (typeof value === 'boolean') json = value ? 'true' : 'false';
     else {
         // unexpected object eg Date
         json = JSON.stringify(value);
@@ -200,7 +201,7 @@ function stringify( value, fmt, defaultString ) {
     return json;
 }
 function isHash(o) { return o && o.constructor === Object }
-**/
+/**/
 
 function JsonExec( options ) {
     this.template = options.template;
