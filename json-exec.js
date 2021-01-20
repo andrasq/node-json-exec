@@ -1,7 +1,7 @@
 /**
  * json-comp -- precompile json
  *
- * Copyright (C) 2019 Andras Radics
+ * Copyright (C) 2019-2021 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2019-03-27 - AR.
@@ -98,7 +98,6 @@ function json_comp( format, options ) {
  */
 function json_exec( encoder, obj ) {
     var template = encoder.template;
-    var converters = encoder.converters;
 
     if (!obj && obj == null) return 'null';
 
@@ -112,15 +111,13 @@ function json_exec( encoder, obj ) {
         json += template[i];
 
         // stringify the property value
-        // json += value === null ? 'null' : converters[typeof value](value, fmt); // 330k/s
+        // json += value === null ? 'null' : encoder.converters[typeof value](value, fmt); // 330k/s
         if (value === null) json += 'null';
         else if (typeof value === 'number') json += (value > -Infinity && value < Infinity) ? value : 'null';
         else if (typeof value === 'string') json += jsonEncodeString(value);
         else if (typeof value === 'boolean') json += value ? 'true' : 'false';
-//        else if (typeof value === fmt.type) json += fmt.converter(value, fmt);
-//        else if (typeof value === 'object') json += converters.object(value, fmt);
-        else json += converters[typeof value](value, fmt);
-        // 480k/s, faster to re-typeof each time than to store typename
+        else json += stringify(value, fmt, encoder.defaultString);
+        // 520k/s, faster to re-typeof each time than to store typename
     }
     json += template[i];
 
@@ -160,7 +157,7 @@ function buildJsonConverter( type, defaultString ) {
 // a typeofToString table method lookup is slower, a switch on the type is slower
 // an external stringify() function is slower, a switch (true) is slower,
 // a pure type table lookup conversion is slower
-/**
+///**
 function stringify( value, fmt, defaultString ) {
     var json;
 
@@ -189,6 +186,7 @@ function stringify( value, fmt, defaultString ) {
         for (var i=0; i<value.length; i++) json += (json ? ',' : '') + stringify(value[i], null, defaultString);
         json = '[' + json + ']';
     }
+    // JSON returns undefined for Symbol and undefined, and throws on BigInt
     else if (typeof value === 'symbol' || typeof value === 'bigint' || typeof value === 'undefined') json = defaultString;
     else if (typeof value === 'number') json = (value > -Infinity && value < Infinity) ? value : 'null';
     else if (typeof value === 'string') json = jsonEncodeString(value);
