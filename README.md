@@ -53,6 +53,7 @@ are omitted.
 Changelog
 ----------------
 
+- 0.3.0 - expose stringify
 - 0.2.1 - more tests, tuning
 - 0.2.0 - fix nested objects, fix null encoding, fix undefined object handling
 - 0.1.3 - bug fixes, tuning

@@ -13,6 +13,7 @@
 module.exports = JsonExec;
 module.exports.json_comp = json_comp;
 module.exports.json_exec = json_exec;
+module.exports.stringify = stringify;
 
 
 /*
@@ -157,7 +158,6 @@ function buildJsonConverter( type, defaultString ) {
 // a typeofToString table method lookup is slower, a switch on the type is slower
 // an external stringify() function is slower, a switch (true) is slower,
 // a pure type table lookup conversion is slower
-///**
 function stringify( value, fmt, defaultString ) {
     var json;
 
@@ -199,7 +199,6 @@ function stringify( value, fmt, defaultString ) {
     return json;
 }
 function isHash(o) { return o && o.constructor === Object }
-/**/
 
 function JsonExec( options ) {
     this.template = options.template;

@@ -148,6 +148,11 @@ module.exports = {
         console.log("JSON.stringify %d in %d ms", nloops, t2 - t1);
 
         var t1 = Date.now();
+        for (var i = 0; i < nloops; i++) var x = JsonExec.stringify(testObj);
+        var t2 = Date.now();
+        console.log("JsonExec.stringify %d in %d ms", nloops, t2 - t1);
+
+        var t1 = Date.now();
         for (var i = 0; i < nloops/10; i++) var je = json_comp(testObj);
         var t2 = Date.now();
         console.log("json_comp %d in %d ms", nloops/10, t2 - t1);
