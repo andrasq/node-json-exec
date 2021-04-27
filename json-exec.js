@@ -237,7 +237,7 @@ JsonExec.prototype.exec = function exec( obj ) {
 function jsonEncodeString( str ) {
     return (_needEscaping(str)) ? JSON.stringify(str) : '"' + str + '"';
 }
-var nodeMajor = parseInt(process.version.slice(1));
+var nodeMajor = parseInt(process.versions.node);
 function _needEscaping( str ) {
     if (nodeMajor <= 9) {
         // regex is faster with node <= v9, slower with >= v10

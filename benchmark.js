@@ -68,7 +68,8 @@ var bench = {
     },
 
     'json_exec': function() {
-        jx = json_exec(je, data);
+        // jx = json_exec(je, data);
+        jx = je.exec(data);
     },
 
     'json_comp const': function() {
@@ -76,7 +77,8 @@ var bench = {
     },
 
     'json_exec const': function() {
-        jx = json_exec(je, data);
+        // jx = json_exec(je, data);
+        jx = je.exec(data);
     },
 };
 if (fastjsonstringify) {

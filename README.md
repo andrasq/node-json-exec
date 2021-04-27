@@ -53,6 +53,8 @@ are omitted.
 Changelog
 ----------------
 
+- 0.2.1 - more tests, tuning
+- 0.2.0 - fix nested objects, fix null encoding, fix undefined object handling
 - 0.1.3 - bug fixes, tuning
 - 0.1.0 - initial version with `json_comp` and `json_exec`
 
