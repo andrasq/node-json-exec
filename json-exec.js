@@ -37,8 +37,8 @@ function json_comp( format, options ) {
     // find a separator that differs from every key and every constant
     var separator = '|';
     for (var i = 0; i < keys.length; i++) {
-        separator += keys[i] + '|';
-        if (constants[keys[i]] !== undefined) separator += constants[keys[i]] + '|';
+        if (keys[i][0] === '|') separator += keys[i] + '|';
+        if (constants[keys[i]] !== undefined && constants[keys[i]][0] === '|') separator += constants[keys[i]] + '|';
     }
     separator += '|';
 

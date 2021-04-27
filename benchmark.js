@@ -70,6 +70,14 @@ var bench = {
     'json_exec': function() {
         jx = json_exec(je, data);
     },
+
+    'json_comp const': function() {
+        je = json_comp(data, {const: {name: 'myApp', hostname: 'hostname', pid: 12345}});
+    },
+
+    'json_exec const': function() {
+        jx = json_exec(je, data);
+    },
 };
 if (fastjsonstringify) {
     var templatize = function(obj) {
